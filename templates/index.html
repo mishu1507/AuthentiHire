@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AuthentiHire — Professional Recruitment Verification Engine. Cross-examine job opportunities, emails, and credentials instantly for compliance and security." />
+  <title>AuthentiHire - Professional Job & Internship Verification</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       1. NAVBAR
+       ═══════════════════════════════════════════════════════════════ -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar__inner">
+      <a href="/" class="navbar__brand">AuthentiHire</a>
+      <div class="navbar__right">
+        <span class="navbar__engine-badge">[ ENGINE v2.0 ]</span>
+        <span class="navbar__tagline">Placement & Employment Security</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       2. HERO SECTION
+       ═══════════════════════════════════════════════════════════════ -->
+  <header class="hero" id="hero">
+    <div class="hero__content">
+      <h1 class="hero__title">Recruitment Verification</h1>
+      <p class="hero__subtitle">
+        Identify fake job offers and recruitment scams instantly using our hybrid AI & rule-based detection engine.
+      </p>
+      <div class="hero__badges">
+        <span class="hero__badge">Gemini Deep Scan</span>
+        <span class="hero__badge">80+ Fraud Patterns</span>
+        <span class="hero__badge">Multi-Format Verification</span>
+        <span class="hero__badge">Secure & Encrypted</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       3. ANALYZER SECTION
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="analyzer" id="analyzer">
+    <div class="analyzer__card">
+
+      <!-- TEXT INPUT MODE -->
+      <div class="input-mode" id="text-mode">
+        <label for="job-text" class="analyzer__label">Paste Job Description, Email, or Message</label>
+        <textarea
+          id="job-text"
+          class="analyzer__textarea"
+          rows="8"
+          placeholder="Paste the job description, email content, or recruiter message here..."
+        ></textarea>
+        <div class="analyzer__counter" id="word-counter">0 words | 0 characters</div>
+      </div>
+
+      <!-- Primary action -->
+      <button
+        type="button"
+        class="btn btn--primary analyzer__submit"
+        id="analyze-btn"
+      >
+        🔍 Analyze with AI
+      </button>
+
+      <!-- Secondary clear button -->
+      <button
+        type="button"
+        class="btn btn--secondary analyzer__clear"
+        id="clear-btn"
+      >
+        Clear
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       4. RESULTS SECTION
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="results hidden" id="results-section">
+    <div class="results__inner">
+
+      <!-- 4a. SCORE CARD -->
+      <div class="score-card" id="score-card">
+        <div class="score-card__container">
+          <span class="score-card__number" id="score-number">0</span>
+          <span class="score-card__divider">/</span>
+          <span class="score-card__max">100</span>
+          <span class="score-card__badge" id="risk-badge">—</span>
+        </div>
+        <div class="score-card__meter">
+          <div class="score-card__fill" id="score-meter-fill"></div>
+        </div>
+        <div class="score-card__source" id="score-source"></div>
+      </div>
+
+      <!-- 4b. AI ANALYSIS SECTION (NEW) -->
+      <div class="ai-section hidden" id="ai-section">
+        <div class="ai-section__header">
+          <h3 class="ai-section__title">🤖 AI Analysis</h3>
+          <span class="ai-section__confidence" id="ai-confidence"></span>
+        </div>
+        <div class="ai-section__reasoning" id="ai-reasoning"></div>
+        <div class="ai-section__scam-type" id="ai-scam-type"></div>
+
+        <!-- AI Flags -->
+        <div class="ai-section__flags" id="ai-flags-container">
+          <h4 class="ai-section__subtitle">🚩 AI-Detected Red Flags</h4>
+          <ul class="ai-flags-list" id="ai-flags-list"></ul>
+        </div>
+
+        <!-- AI Positive Signals -->
+        <div class="ai-section__positives hidden" id="ai-positives-container">
+          <h4 class="ai-section__subtitle">✅ Positive Signals</h4>
+          <ul class="ai-positives-list" id="ai-positives-list"></ul>
+        </div>
+
+        <!-- Score Breakdown -->
+        <div class="ai-section__breakdown">
+          <div class="breakdown-bar">
+            <div class="breakdown-bar__item">
+              <span class="breakdown-bar__label">Rule-Based</span>
+              <div class="breakdown-bar__track">
+                <div class="breakdown-bar__fill rules" id="rule-bar"></div>
+              </div>
+              <span class="breakdown-bar__value" id="rule-score-display">0</span>
+            </div>
+            <div class="breakdown-bar__item">
+              <span class="breakdown-bar__label">AI Score</span>
+              <div class="breakdown-bar__track">
+                <div class="breakdown-bar__fill ai" id="ai-bar"></div>
+              </div>
+              <span class="breakdown-bar__value" id="ai-score-display">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- 4c. TWO-COLUMN DETAILS -->
+      <div class="details">
+        <div class="details__col">
+          <h3 class="details__heading">🚩 Red Flags Found</h3>
+          <ul class="flags-list" id="flags-list"></ul>
+        </div>
+        <div class="details__col">
+          <h3 class="details__heading">🔍 Suspicious Phrases</h3>
+          <div class="phrases-container" id="phrases-container"></div>
+        </div>
+      </div>
+
+      <!-- 4d. RECOMMENDATION BOX -->
+      <div class="recommendation" id="recommendation-box">
+        <span class="recommendation__icon" id="rec-icon"></span>
+        <p class="recommendation__text" id="rec-text"></p>
+      </div>
+
+      <!-- 4e. ACTION BUTTONS -->
+      <div class="results__actions">
+        <button type="button" class="btn btn--accent" id="download-btn">
+          📥 Download Report
+        </button>
+        <button type="button" class="btn btn--secondary" id="analyze-another-btn">
+          🔄 Analyze Another
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       5. HOW IT WORKS
+       ═══════════════════════════════════════════════════════════════ -->
+  <section class="how-it-works" id="how-it-works">
+    <h2 class="section-title">How It Works</h2>
+    <div class="steps">
+      <div class="step-card">
+        <span class="step-card__icon">📋</span>
+        <h3 class="step-card__title">Step 1: Input</h3>
+        <p class="step-card__desc">Paste the job offer text, email, or upload a document / screenshot image.</p>
+      </div>
+      <div class="step-card">
+        <span class="step-card__icon">🤖</span>
+        <h3 class="step-card__title">Step 2: AI Scans</h3>
+        <p class="step-card__desc">Google Gemini AI + 80+ rule patterns analyze the content for manipulation tactics, fake domains, and red flags.</p>
+      </div>
+      <div class="step-card">
+        <span class="step-card__icon">🛡️</span>
+        <h3 class="step-card__title">Step 3: Stay Safe</h3>
+        <p class="step-card__desc">Get a detailed risk score, AI reasoning, and clear recommendations to protect yourself.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       6. FOOTER
+       ═══════════════════════════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <span class="footer__brand">AuthentiHire</span>
+      <p class="footer__text">Professional hybrid verification engine protecting placement and employment channels.</p>
+      <p class="footer__disclaimer">
+        System output is for information security and validation purposes. Verify all credentials independently.
+        <span class="footer__signature" style="opacity: 0.15; font-size: 0.62rem; display: block; margin-top: 0.5rem; font-family: var(--ff-mono); letter-spacing: 0.05em;">SYS_BUILD: SEC-AB_2026 // ADITI_BORKAR</span>
+      </p>
+    </div>
+  </footer>
+
+  <!-- App JavaScript -->
+  <script src="/static/script.js"></script>
+</body>
+</html>
