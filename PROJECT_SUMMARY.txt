@@ -1,0 +1,221 @@
+# PROJECT SUMMARY - SCAM DETECTION SYSTEM
+
+## What You're Building
+A web app that detects job scams by analyzing text for red flags.
+
+## How It Works (Simple Version)
+1. User pastes text (job description, email, etc.)
+2. Backend finds red-flag keywords and suspicious patterns
+3. Calculates risk score (0-100%)
+4. Shows results with explanation
+5. User can download report
+
+## File Structure
+```
+scam_detector/
+├── app.py                    # Flask server + API
+├── scam_detector.py          # Detection logic (keywords, scoring)
+├── requirements.txt          # Dependencies: Flask, Flask-CORS
+├── templates/
+│   ├── index.html           # Input page
+│   └── results.html         # Results page
+├── static/
+│   ├── style.css            # All styling
+│   ├── script.js            # Input page logic
+│   └── results.js           # Results page logic
+└── README.md                # Documentation
+```
+
+## What Each File Does
+
+### app.py (50 lines)
+- Creates Flask app
+- Defines API endpoint: POST /api/analyze
+- Calls ScamDetector class
+- Returns JSON response
+
+### scam_detector.py (200 lines)
+- Stores keyword lists (urgency, payment, vagueness, authority)
+- Main function: `analyze(content, type)`
+- Returns: score, recommendation, flagged_phrases, domain_analysis
+- Helper functions for keyword counting, domain checking, etc.
+
+### index.html (Input Page)
+- Radio buttons for content type
+- Text area for input
+- "Analyze" button
+- Word counter
+- Simple, clean design
+
+### results.html (Results Page)
+- Large risk score display (color-coded)
+- List of flagged phrases
+- Breakdown stats (keyword counts)
+- Domain info (if email detected)
+- Download report button
+
+### style.css
+- Responsive design (works on phone + desktop)
+- Color scheme: Blue (#1F4788), Red (#DC3545), Green (#28A745)
+- Card-based layout
+- Clean, modern look
+
+### script.js (Input Page)
+- Listens for "Analyze" button click
+- Validates input (>10 characters)
+- Sends POST to /api/analyze
+- Stores result in sessionStorage
+- Redirects to /results
+
+### results.js (Results Page)
+- Loads result from sessionStorage
+- Displays score with color (green/yellow/red)
+- Lists flagged phrases with categories
+- Shows breakdown stats
+- Handles download button
+
+## Key Numbers
+
+### Risk Score Calculation
+- Urgency keywords: up to 30 points
+- Payment requests: up to 35 points
+- Vague details: up to 20 points
+- Authority language: up to 25 points
+- Legitimate keywords: subtract up to 20 points
+- Domain issues: add 25 points
+
+### Score Ranges
+- 0-29: SAFE (Green)
+- 30-59: REVIEW (Yellow)
+- 60-100: REJECT (Red)
+
+## Red Flag Keywords (Examples)
+
+**Urgency (4 examples):**
+"limited time", "act now", "expires today", "asap"
+
+**Payment (4 examples):**
+"upfront fee", "registration charge", "bank details", "deposit"
+
+**Vagueness (4 examples):**
+"work from home", "no experience", "easy money", "flexible"
+
+**Authority (4 examples):**
+"verify account", "confirm identity", "unusual activity", "urgent action"
+
+## API Endpoint
+
+### POST /api/analyze
+**Send:**
+```json
+{
+  "type": "job_desc|email|company",
+  "content": "Text to analyze..."
+}
+```
+
+**Get back:**
+```json
+{
+  "score": 72,
+  "recommendation": "review|safe|reject",
+  "explanation": "Human-readable reason...",
+  "keywords": {
+    "counts": {"urgency": 2, "payment": 1, "vagueness": 3, ...},
+    "flagged_phrases": [...]
+  },
+  "domain": {"emails": [...], "domains": [...], ...}
+}
+```
+
+## Running the App
+
+**Terminal:**
+```bash
+pip install -r requirements.txt
+python app.py
+```
+
+**Browser:**
+Open http://localhost:5000
+
+**Stop:**
+Press Ctrl+C in terminal
+
+## Testing Checklist
+
+- [ ] App starts without errors
+- [ ] Homepage loads
+- [ ] Can type in text area
+- [ ] Word count updates as you type
+- [ ] "Analyze" button works
+- [ ] Results page shows score and flagged phrases
+- [ ] Score color changes (green/yellow/red)
+- [ ] "Analyze Another" button goes back to input
+- [ ] Download button creates a text file
+
+## Quick Demo Script (2 minutes)
+
+1. **Show input page:** "Here you paste job description or email"
+2. **Paste scam text:** "This is a real scam email we found"
+3. **Click Analyze:** "System checks for red flags"
+4. **Show score:** "Red score of 75 - it's definitely a scam"
+5. **Point to phrases:** "See it found urgency language, payment request, vague details"
+6. **Explain logic:** "We look for patterns common in scams"
+7. **Paste legitimate job:** "Now let's test a real job posting"
+8. **Show green score:** "Compare - legitimate job is green"
+
+## Common Issues & Fixes
+
+| Issue | Fix |
+|-------|-----|
+| Port 5000 in use | Change `port=5000` to `port=5001` in app.py |
+| Module not found | Run `pip install -r requirements.txt` again |
+| Results page blank | Check browser console (F12) for errors |
+| Slow response | First run slower - normal for Flask development |
+
+## What to Emphasize in Presentation
+
+1. **Simplicity:** Easy to understand, keyword-based approach
+2. **Speed:** Analyzes in <1 second
+3. **Explainability:** Shows exactly what's flagged and why
+4. **User-friendly:** Clean UI, clear recommendations
+5. **Actionable:** Three-tier recommendation (Safe/Review/Reject)
+
+## What NOT to Say
+
+- "ML model trained on..." (you don't have training data)
+- "99.9% accurate" (only works for obvious patterns)
+- "Completely foolproof" (sophisticated scams can slip through)
+- "Stores all data for analysis" (misleading, it doesn't)
+
+## Future Ideas (for Q&A)
+
+- Train ML model if given labeled dataset
+- Integrate with company database for email verification
+- Browser extension for instant checking
+- Community reporting (users submit new scam patterns)
+- Multi-language support
+- Advanced NLP (sentiment, semantics)
+
+## Group Division Suggestions
+
+- **Person 1:** Frontend (HTML, CSS, JS fixes)
+- **Person 2:** Backend (Flask routes, database if needed)
+- **Person 3:** Detection Logic (keywords, scoring, improvements)
+- **Person 4:** Demo + Presentation (practice, slides, Q&A prep)
+
+Everyone should understand all parts before Saturday.
+
+## Final Check (Day Before)
+
+- [ ] App runs on all group members' laptops
+- [ ] Demo works smoothly (no pauses, no errors)
+- [ ] Team knows talking points
+- [ ] Backup plan ready (screenshots if demo fails)
+- [ ] Everyone can answer basic questions
+- [ ] Test cases prepared and ready to paste
+
+---
+
+**You've got this. Build it, test it, present it. Good luck Saturday!**
