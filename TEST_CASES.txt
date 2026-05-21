@@ -1,0 +1,309 @@
+# TEST CASES & DEMO DATA
+
+Use these test cases to verify the system works and for your Saturday demo.
+
+---
+
+## TEST CASE 1: OBVIOUS SCAM (Expected: Score 70+, RED)
+
+**Input Type:** Job Description
+
+**Paste this:**
+```
+URGENT - LIMITED TIME OFFER!!!
+
+Dear Valued Candidate,
+
+Congratulations! You have been pre-selected for an exclusive work-from-home internship 
+with our prestigious company. This is a limited-time offer available to only 50 candidates!
+
+Position: Virtual Business Manager
+No experience needed! Absolutely no qualifications required!
+Earn up to $5,000 per month with minimal effort.
+
+How to Get Started:
+1. Send us your bank details
+2. Pay a small registration fee of just $200
+3. Start working immediately!
+
+This opportunity expires TODAY! Act now or lose this chance forever!
+
+Spots are filling extremely fast. Send your bank account information immediately 
+to reserve your position.
+
+Click here to confirm your details urgently.
+
+Best regards,
+HR Department
+```
+
+**Expected Results:**
+- Score: 70-80 (RED)
+- Recommendation: REJECT
+- Flagged phrases should include:
+  - "limited time", "LIMITED TIME"
+  - "act now", "Act now"
+  - "registration fee"
+  - "bank details"
+  - "No experience needed"
+  - "minimal effort"
+  - "expires TODAY"
+- Keyword counts:
+  - Urgency: 4+
+  - Payment: 2+
+  - Vagueness: 3+
+
+**What to Say During Demo:**
+"Look at this - 4 urgency triggers, payment request, vague job description, and asking for sensitive info. Multiple red flags. Score is red. This is clearly a scam."
+
+---
+
+## TEST CASE 2: LEGITIMATE JOB (Expected: Score <30, GREEN)
+
+**Input Type:** Job Description
+
+**Paste this:**
+```
+Accenture Graduate Trainee Program 2026
+
+Job Title: Software Engineer (Graduate Trainee)
+Location: Bangalore, India
+Work Mode: On-site
+Salary: 3.5 - 4.5 LPA (based on performance)
+
+Eligibility Criteria:
+- Bachelor of Technology in Computer Science or related field
+- CGPA: 6.5 and above
+- Graduation: 2024-2026
+- No active backlogs at the time of interview
+
+Job Description:
+Our Graduate Trainee Program is designed to develop entry-level software engineers. 
+You will work alongside experienced mentors on real-world projects using Java, Python, 
+and cloud technologies.
+
+Key Responsibilities:
+- Design and develop software solutions
+- Participate in code reviews and team discussions
+- Complete assigned training modules
+- Collaborate with cross-functional teams
+
+Interview Process:
+1. Online Aptitude Test (Duration: 1 hour)
+2. Technical Interview (45 minutes - Data Structures, Algorithms)
+3. HR Round (30 minutes - Culture fit and background)
+4. Final Offer (if selected)
+
+Important Information:
+- No registration or application fees required
+- Training is fully sponsored by Accenture
+- All interviews conducted by official recruiters
+- Results communicated within 7-10 days
+
+To Apply:
+Visit: careers.accenture.com
+Email: recruitment-india@accenture.com
+Phone: 080-XXXX-XXXX
+
+For more information, visit our official careers page or contact our HR team directly.
+```
+
+**Expected Results:**
+- Score: 10-25 (GREEN)
+- Recommendation: SAFE
+- Very few or no flagged phrases
+- Keyword counts:
+  - Urgency: 0-1
+  - Payment: 0
+  - Vagueness: 0-1
+  - Authority: 0
+  - Legitimate: 5+ (qualifications, responsibilities, interview process, training, etc.)
+
+**What to Say During Demo:**
+"Now compare this - legitimate job posting. Clear role, qualifications listed, structured interview process, no fees mentioned. System detects legitimate language like 'responsibilities', 'interview process', 'training'. Score is green. Safe to apply."
+
+---
+
+## TEST CASE 3: SUSPICIOUS BUT NOT OBVIOUS (Expected: Score 40-50, YELLOW)
+
+**Input Type:** Email
+
+**Paste this:**
+```
+Subject: Urgent Reply Needed - Internship Opportunity
+
+Hi There,
+
+I hope this email finds you well. We are hiring enthusiastic candidates for flexible 
+remote work positions. No experience or formal qualifications needed - we provide 
+complete training!
+
+This is a limited-time recruitment drive. We only have a few spots available, and 
+we're moving fast. To secure your position, please reply immediately with:
+
+- Your bank account details
+- Your full legal name and ID
+- Your address
+
+Verification is quick and takes 2-3 minutes. Once verified, you can start earning 
+within 24 hours!
+
+We're especially interested in people who can work part-time or from home. Flexible 
+hours available. No boss to answer to!
+
+Interested? Reply ASAP!
+
+Thanks,
+Management Team
+```
+
+**Expected Results:**
+- Score: 45-55 (YELLOW)
+- Recommendation: REVIEW
+- Flagged phrases:
+  - "limited time", "Urgent"
+  - "bank account details"
+  - "No experience"
+  - "remote work", "from home"
+  - "ASAP"
+- This is a borderline case that deserves review
+
+**What to Say During Demo:**
+"This one is trickier. Not obviously a scam, but multiple warning signs. Vague about role, asks for sensitive info, uses urgency. Yellow flag means review carefully before applying."
+
+---
+
+## TEST CASE 4: MINIMAL/EDGE CASE (Expected: Score 20-30, GREEN to YELLOW)
+
+**Input Type:** Email
+
+**Paste this:**
+```
+Hello,
+
+We're hiring interns for the summer. If interested, send your resume to: jobs@techstartup.io
+
+Thanks
+```
+
+**Expected Results:**
+- Score: 15-25 (GREEN to YELLOW boundary)
+- No flagged phrases
+- Very short content
+- Generic message
+- No red flags but also no professional details
+
+**What to Say During Demo:**
+"Short, simple message. No red flags detected, but also lacks professional details. Our system says safe, but you'd want to verify the company independently."
+
+---
+
+## TEST CASE 5: YOUR OWN REAL EMAIL (Optional)
+
+If you have a suspicious job email, use it!
+
+**Steps:**
+1. Copy the email text (not headers)
+2. Paste into the system
+3. See what gets flagged
+4. Discuss with your group why
+
+---
+
+## DEMO SEQUENCE (Recommended Order)
+
+### For a 5-minute demo:
+1. Start with input page (10 sec) - show clean UI
+2. Paste TEST CASE 1 (obvious scam) (30 sec)
+3. Click Analyze, show RED score (20 sec)
+4. Point to 2-3 flagged phrases (20 sec)
+5. Click "Analyze Another"
+6. Paste TEST CASE 2 (legitimate job) (20 sec)
+7. Show GREEN score, compare (20 sec)
+8. Summarize findings (30 sec)
+
+**Total: ~5 minutes**
+
+### For a 10-minute demo:
+Add TEST CASE 3 (suspicious/yellow) in the middle
+- Show all three score levels
+- Demonstrate decision-making process
+- Answer Q&A
+
+---
+
+## Quick Testing Checklist
+
+Before Saturday, verify each test case:
+
+- [ ] Test Case 1 produces RED (70+) ✓
+- [ ] Test Case 2 produces GREEN (<30) ✓
+- [ ] Test Case 3 produces YELLOW (40-50) ✓
+- [ ] Flagged phrases are highlighted ✓
+- [ ] Keyword counts are shown ✓
+- [ ] Color coding works (red/yellow/green) ✓
+- [ ] Download report button works ✓
+- [ ] "Analyze Another" goes back to input ✓
+- [ ] Word counter updates in real-time ✓
+- [ ] Error handling works (paste empty, too short, etc.) ✓
+
+---
+
+## Notes for Testers
+
+**Exact Score May Vary Slightly** - depending on:
+- Exact text you paste (word choice)
+- Whitespace and formatting
+- Keyword overlaps
+
+**If scores don't match expectations:**
+- Check scam_detector.py keyword lists
+- Verify scoring formula hasn't changed
+- Count keywords manually
+- Adjust test cases as needed
+
+**Optimizations to Consider:**
+- Tweak point values if scores seem off
+- Add more keywords based on testing
+- Adjust score thresholds (currently 0-29 safe, 30-59 review, 60+ reject)
+
+---
+
+## For Your Presentation
+
+**Show confidence:** "We tested this with real scam emails and legitimate job posts."
+
+**Be honest:** "It catches obvious patterns. Sophisticated scams might slip through. Future version would use ML."
+
+**Interactive:** Let audience suggest text to analyze during Q&A (if confident).
+
+---
+
+## Additional Tips
+
+- Copy test cases to a text file on demo laptop
+- Practice pasting quickly
+- Have backup: screenshot of results if demo fails
+- One person should handle typing, others watch
+- Everyone should know what's happening
+
+**Remember:** The demo is the strongest part of your presentation. Practice it multiple times before Saturday.
+
+---
+
+## Backup Screenshots (if demo fails)
+
+Before Saturday, take these screenshots:
+1. Input page with TEST CASE 1 pasted
+2. Results page showing RED score
+3. Results page showing GREEN score
+4. Flagged phrases highlighted
+5. Download report example
+
+Save as: screenshot_1.png, screenshot_2.png, etc.
+
+If live demo fails, you can show these to jury - they still understand what you built.
+
+---
+
+**Good luck with testing!**
