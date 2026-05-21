@@ -59,9 +59,6 @@
         <button type="button" class="input-toggle__btn active" data-mode="text" id="mode-text-btn">
           📝 Paste Text
         </button>
-        <button type="button" class="input-toggle__btn" data-mode="file" id="mode-file-btn">
-          📄 Upload File
-        </button>
         <button type="button" class="input-toggle__btn" data-mode="image" id="mode-image-btn">
           🖼️ Screenshot
         </button>
@@ -79,24 +76,6 @@
         <div class="analyzer__counter" id="word-counter">0 words | 0 characters</div>
       </div>
 
-      <!-- FILE UPLOAD MODE -->
-      <div class="input-mode hidden" id="file-mode">
-        <label class="analyzer__label">Upload Job Offer / Email Document</label>
-        <div class="dropzone" id="dropzone">
-          <div class="dropzone__content">
-            <span class="dropzone__icon">📁</span>
-            <p class="dropzone__text">Drag & drop your file here</p>
-            <p class="dropzone__hint">or click to browse</p>
-            <p class="dropzone__formats">Supports: .docx, .pdf, .txt, .eml</p>
-          </div>
-          <input type="file" id="file-input" accept=".txt,.docx,.pdf,.eml,.doc" class="dropzone__input" />
-        </div>
-        <div class="file-info hidden" id="file-info">
-          <span class="file-info__icon">📎</span>
-          <span class="file-info__name" id="file-name"></span>
-          <button type="button" class="file-info__remove" id="remove-file" title="Remove file">✕</button>
-        </div>
-      </div>
 
       <!-- IMAGE UPLOAD MODE -->
       <div class="input-mode hidden" id="image-mode">
@@ -271,6 +250,7 @@
       <p class="footer__text">Professional hybrid verification engine protecting placement and employment channels.</p>
       <p class="footer__disclaimer">
         System output is for information security and validation purposes. Verify all credentials independently.
+        <span class="footer__signature" style="opacity: 0.15; font-size: 0.62rem; display: block; margin-top: 0.5rem; font-family: var(--ff-mono); letter-spacing: 0.05em;">SYS_BUILD: SEC-AB_2026 // ADITI_BORKAR</span>
       </p>
     </div>
   </footer>

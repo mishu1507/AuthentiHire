@@ -28,71 +28,18 @@ from ai_detector import analyze_with_ai, analyze_image_with_ai, compute_combined
 app = Flask(__name__, template_folder="templates", static_folder="static")
 CORS(app)
 
-# Set the Gemini API key from environment or hardcode for development
+# Set the NVIDIA API key from environment or hardcode for development
 # In production, always use environment variables!
-if not os.environ.get("GEMINI_API_KEY"):
-    os.environ["GEMINI_API_KEY"] = "AIzaSyCLOEIDDhN8rizZSwIx4LEF95L5GlgwBGU"
+if not os.environ.get("NVIDIA_API_KEY"):
+    os.environ["NVIDIA_API_KEY"] = "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"
 
 # Configure upload settings
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB max upload
-ALLOWED_EXTENSIONS = {".txt", ".docx", ".pdf", ".eml", ".doc"}
-IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg"}
 IMAGE_MIME_MAP = {
     ".png": "image/png",
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
 }
-
-
-# ---------------------------------------------------------------------------
-# 2. FILE PARSING UTILITIES
-# ---------------------------------------------------------------------------
-
-def extract_text_from_file(file_storage) -> str:
-    """
-    Extract text content from an uploaded file.
-
-    Supports: .txt, .eml, .docx, .pdf
-    """
-    filename = file_storage.filename.lower()
-    ext = os.path.splitext(filename)[1]
-
-    if ext not in ALLOWED_EXTENSIONS:
-        raise ValueError(f"Unsupported file type: {ext}. Supported: {', '.join(ALLOWED_EXTENSIONS)}")
-
-    if ext in (".txt", ".eml"):
-        # Plain text or email file — read directly
-        try:
-            content = file_storage.read().decode("utf-8")
-        except UnicodeDecodeError:
-            content = file_storage.read().decode("latin-1")
-        return content
-
-    elif ext in (".docx", ".doc"):
-        # Word document — use python-docx
-        try:
-            import docx
-            doc = docx.Document(file_storage)
-            paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
-            return "\n".join(paragraphs)
-        except Exception as e:
-            raise ValueError(f"Failed to read .docx file: {str(e)}")
-
-    elif ext == ".pdf":
-        # PDF document — use PyPDF2
-        try:
-            import PyPDF2
-            reader = PyPDF2.PdfReader(file_storage)
-            text_parts = []
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-            return "\n".join(text_parts)
-        except Exception as e:
-            raise ValueError(f"Failed to read PDF file: {str(e)}")
-
-    raise ValueError(f"Unsupported file type: {ext}")
 
 
 # ---------------------------------------------------------------------------
@@ -140,23 +87,14 @@ def analyze():
             filename = uploaded_file.filename.lower()
             ext = os.path.splitext(filename)[1]
 
-            if ext in IMAGE_EXTENSIONS:
+            if ext in {".png", ".jpg", ".jpeg"}:
                 # IMAGE UPLOAD — use Gemini Vision
                 is_image = True
                 image_bytes = uploaded_file.read()
                 image_mime = IMAGE_MIME_MAP.get(ext, "image/png")
                 print(f"[INFO] Image upload: {uploaded_file.filename} ({image_mime}, {len(image_bytes)} bytes)")
-            elif ext in ALLOWED_EXTENSIONS:
-                # DOCUMENT UPLOAD — extract text
-                try:
-                    print(f"[INFO] File upload: {uploaded_file.filename}")
-                    text = extract_text_from_file(uploaded_file)
-                    print(f"[INFO] Extracted {len(text)} chars from file")
-                except ValueError as e:
-                    print(f"[ERROR] File parsing failed: {e}")
-                    return jsonify({"error": str(e)}), 400
             else:
-                return jsonify({"error": f"Unsupported file type: {ext}. Supported: .docx, .pdf, .txt, .eml, .png, .jpg, .jpeg"}), 400
+                return jsonify({"error": f"Unsupported file type: {ext}. Supported: .png, .jpg, .jpeg"}), 400
         elif form_text:
             text = form_text
         else:
@@ -307,12 +245,12 @@ def analyze():
 @app.route("/api/status", methods=["GET"])
 def status():
     """Health check endpoint."""
-    has_api_key = bool(os.environ.get("GEMINI_API_KEY"))
+    has_api_key = bool(os.environ.get("NVIDIA_API_KEY"))
     return jsonify({
         "status": "ok",
         "ai_enabled": has_api_key,
         "version": "2.0.0",
-        "engine": "hybrid_ai_rules",
+        "engine": "hybrid_ai_rules_nvidia",
     }), 200
 
 
@@ -324,7 +262,7 @@ if __name__ == "__main__":
     print("=" * 60)
     print("  AuthentiHire v2.0 — AI-Powered Verification")
     print("  http://127.0.0.1:5000")
-    ai_status = "ENABLED" if os.environ.get("GEMINI_API_KEY") else "DISABLED (no API key)"
+    ai_status = "ENABLED (NVIDIA Llama 3.2 Vision)" if os.environ.get("NVIDIA_API_KEY") else "DISABLED (no API key)"
     print(f"  AI Engine: {ai_status}")
     print("=" * 60)
 

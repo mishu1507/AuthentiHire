@@ -1,5 +1,3 @@
 flask
 flask-cors
-google-genai
-python-docx
-PyPDF2
+openai

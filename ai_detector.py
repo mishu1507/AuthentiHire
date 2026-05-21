@@ -1,7 +1,7 @@
 """
-ai_detector.py - AI-Powered Scam Detection using Google Gemini
+ai_detector.py - AI-Powered Scam Detection using NVIDIA NIM API
 ===============================================================
-Uses Google Gemini 2.0 Flash to perform deep semantic analysis of
+Uses NVIDIA's Llama 3.2 11B Vision Instruct model to perform deep semantic analysis of
 job/internship postings and emails. Unlike keyword matching, the AI
 understands context, tone, manipulation tactics, and subtle red flags.
 """
@@ -13,25 +13,28 @@ import re
 from typing import Dict, Any, Optional
 
 # ---------------------------------------------------------------------------
-# 1. GEMINI CLIENT SETUP
+# 1. OPENAI CLIENT SETUP (Configured for NVIDIA NIM)
 # ---------------------------------------------------------------------------
 
 _client = None
-_MODEL_ID = "gemini-2.0-flash"
+_MODEL_ID = "meta/llama-3.2-11b-vision-instruct"
 
 
 def _get_client():
-    """Lazy-init the Gemini client."""
+    """Lazy-init the OpenAI client for NVIDIA NIM."""
     global _client
     if _client is None:
         try:
-            from google import genai
-            api_key = os.environ.get("GEMINI_API_KEY", "")
+            from openai import OpenAI
+            api_key = os.environ.get("NVIDIA_API_KEY", "")
             if not api_key:
                 return None
-            _client = genai.Client(api_key=api_key)
+            _client = OpenAI(
+                base_url="https://integrate.api.nvidia.com/v1",
+                api_key=api_key
+            )
         except Exception as e:
-            print(f"[AI_DETECTOR] Failed to initialize Gemini client: {e}")
+            print(f"[AI_DETECTOR] Failed to initialize OpenAI client for NVIDIA: {e}")
             return None
     return _client
 
@@ -44,7 +47,7 @@ ANALYSIS_PROMPT = """You are an expert Cyber Fraud Investigator specializing in 
 fraudulent internship offers, and employment phishing attacks. You have 15+ years of experience 
 analyzing thousands of scam emails, job postings, and recruitment fraud schemes.
 
-Analyze the following text that was submitted as a potential job offer, internship opportunity, 
+Analyze the text or image that was submitted as a potential job offer, internship opportunity, 
 or recruitment email. Perform a thorough investigation and return your findings.
 
 ANALYSIS FRAMEWORK — Check ALL of these dimensions:
@@ -79,26 +82,16 @@ ANALYSIS FRAMEWORK — Check ALL of these dimensions:
    - Mass email patterns (generic greeting, no personalization beyond name)
    - "Unsubscribe" links typical of mass marketing, not recruitment
 
-5. **EMAIL STRUCTURE ANALYSIS**
-   - Is this an unsolicited email (the person didn't apply)?
-   - Does it follow a mass-mailer template pattern?
-   - Are there signs of email spoofing or impersonation?
-   - Is the formatting consistent with professional recruitment emails?
-
-6. **DOMAIN & LINK ANALYSIS**
+5. **DOMAIN & LINK ANALYSIS**
    - Check any URLs or domains mentioned
    - Look for suspicious TLDs, redirects, or link shorteners
    - Check if domains impersonate legitimate companies
 
-TEXT TO ANALYZE:
----
-{text}
----
-
 IMPORTANT: You MUST respond with ONLY a valid JSON object (no markdown, no code fences, no extra text). 
 Use this exact structure:
 
-{{
+{
+  "extracted_text": "<if an image was provided, extract all text you can read from it here>",
   "ai_score": <integer 0-100, where 0=definitely legitimate, 100=definitely a scam>,
   "ai_risk_level": "<LOW|MEDIUM|HIGH>",
   "ai_confidence": <integer 0-100, how confident you are in your assessment>,
@@ -111,7 +104,7 @@ Use this exact structure:
   ],
   "ai_reasoning": "<2-3 sentence summary explaining your overall assessment>",
   "scam_type": "<type of scam if detected: 'recruitment_phishing', 'fee_fraud', 'data_harvesting', 'pyramid_scheme', 'impersonation', 'legitimate', 'unknown'>"
-}}
+}
 
 SCORING GUIDE:
 - 0-20: Clearly legitimate job posting from a real company
@@ -121,89 +114,13 @@ SCORING GUIDE:
 - 81-100: Almost certainly a scam — classic fraud patterns
 
 Be thorough, be skeptical, and err on the side of caution to protect job seekers."""
-
-
-# ---------------------------------------------------------------------------
-# 2b. IMAGE ANALYSIS PROMPT — for screenshot uploads
-# ---------------------------------------------------------------------------
-
-IMAGE_ANALYSIS_PROMPT = """You are an expert Cyber Fraud Investigator specializing in fake job scams,
-fraudulent internship offers, and employment phishing attacks. You have 15+ years of experience
-analyzing thousands of scam emails, job postings, and recruitment fraud schemes.
-
-The user has uploaded a SCREENSHOT of a job offer, internship email, recruitment message,
-or similar content. Your task is to:
-
-1. **READ AND EXTRACT** all visible text from the image (email body, sender info, subject lines,
-   headers, links, buttons, timestamps — everything you can see)
-2. **ANALYZE** the extracted content for scam indicators using the same framework as text analysis
-
-ANALYSIS FRAMEWORK — Check ALL of these dimensions:
-
-1. **VISUAL CUES** (unique to image analysis)
-   - Does the email/page look professionally designed or amateurish?
-   - Are there suspicious formatting issues, misaligned elements, or low-quality logos?
-   - Are there visible sender addresses, and do they look legitimate?
-   - Can you see any URLs, and do they look suspicious?
-   - Are there signs of mass-mailer templates (generic layout, unsubscribe links)?
-
-2. **SENDER CREDIBILITY**
-   - Is the sender using a professional company domain or a free/generic email?
-   - Does the domain look like an impersonation?
-   - Is there a real company name or just vague references?
-
-3. **CONTENT LEGITIMACY**
-   - Is there a specific job role, title, or position?
-   - Are there specific company names or just vague "leading MNCs"?
-   - Is there a real job description with responsibilities?
-   - Are salary/compensation details mentioned?
-
-4. **MANIPULATION TACTICS**
-   - Unsolicited "CONGRATULATIONS" or "You have been selected" without applying
-   - Urgency pressure, flattery, too-good-to-be-true promises
-   - Vague benefits without specifics
-
-5. **RED FLAGS**
-   - Asking to "register" on an external link
-   - Requesting personal documents or payment upfront
-   - WhatsApp-only communication
-   - Mass email patterns, "Unsubscribe" links
-
-IMPORTANT: You MUST respond with ONLY a valid JSON object (no markdown, no code fences, no extra text).
-Use this exact structure:
-
-{{
-  "extracted_text": "<all text you can read from the image, preserving structure>",
-  "ai_score": <integer 0-100, where 0=definitely legitimate, 100=definitely a scam>,
-  "ai_risk_level": "<LOW|MEDIUM|HIGH>",
-  "ai_confidence": <integer 0-100, how confident you are in your assessment>,
-  "ai_flags": [
-    "<specific red flag finding 1>",
-    "<specific red flag finding 2>"
-  ],
-  "ai_positive_signals": [
-    "<any legitimate signals found, or empty array>"
-  ],
-  "ai_reasoning": "<2-3 sentence summary explaining your overall assessment>",
-  "scam_type": "<type of scam if detected: 'recruitment_phishing', 'fee_fraud', 'data_harvesting', 'pyramid_scheme', 'impersonation', 'legitimate', 'unknown'>"
-}}
-
-SCORING GUIDE:
-- 0-20: Clearly legitimate job posting from a real company
-- 21-40: Mostly legitimate but with minor concerns
-- 41-60: Suspicious — multiple yellow flags
-- 61-80: Likely a scam — strong red flags present
-- 81-100: Almost certainly a scam — classic fraud patterns
-
-Be thorough, be skeptical, and err on the side of caution to protect job seekers."""
-
 
 # ---------------------------------------------------------------------------
 # 3. AI ANALYSIS FUNCTIONS
 # ---------------------------------------------------------------------------
 
 def _parse_ai_response(response_text: str) -> Dict[str, Any]:
-    """Parse and validate the JSON response from Gemini."""
+    """Parse and validate the JSON response from the LLM."""
     # Clean up potential markdown code fences
     cleaned = response_text.strip()
     if cleaned.startswith("```"):
@@ -228,7 +145,7 @@ def _parse_ai_response(response_text: str) -> Dict[str, Any]:
 
 def analyze_with_ai(text: str) -> Dict[str, Any]:
     """
-    Send text to Google Gemini for deep scam analysis.
+    Send text to NVIDIA NIM (Llama 3.2 Vision Instruct) for deep scam analysis.
 
     Parameters
     ----------
@@ -246,28 +163,30 @@ def analyze_with_ai(text: str) -> Dict[str, Any]:
         return _fallback_result("AI analysis unavailable -- no API key configured")
 
     try:
-        prompt = ANALYSIS_PROMPT.format(text=text)
-
-        response = client.models.generate_content(
+        response = client.chat.completions.create(
             model=_MODEL_ID,
-            contents=prompt,
+            messages=[
+                {"role": "system", "content": ANALYSIS_PROMPT},
+                {"role": "user", "content": f"TEXT TO ANALYZE:\n---\n{text}\n---"}
+            ],
+            temperature=0.2,
+            max_tokens=1024,
         )
-
-        return _parse_ai_response(response.text)
+        
+        return _parse_ai_response(response.choices[0].message.content)
 
     except json.JSONDecodeError as e:
-        print(f"[AI_DETECTOR] Failed to parse Gemini response as JSON: {e}")
+        print(f"[AI_DETECTOR] Failed to parse API response as JSON: {e}")
         return _fallback_result("AI response parsing failed")
 
     except Exception as e:
-        print(f"[AI_DETECTOR] Gemini API call failed: {e}")
+        print(f"[AI_DETECTOR] NVIDIA API call failed: {e}")
         return _fallback_result(f"AI analysis failed: {str(e)}")
 
 
 def analyze_image_with_ai(image_bytes: bytes, mime_type: str) -> Dict[str, Any]:
     """
-    Send an image (screenshot) to Google Gemini Vision for scam analysis.
-    Gemini 2.0 Flash has built-in vision — no OCR library needed.
+    Send an image (screenshot) to NVIDIA NIM for scam analysis.
 
     Parameters
     ----------
@@ -287,27 +206,39 @@ def analyze_image_with_ai(image_bytes: bytes, mime_type: str) -> Dict[str, Any]:
         return _fallback_result("AI analysis unavailable -- no API key configured")
 
     try:
-        from google.genai import types
+        # Encode image to base64
+        base64_encoded = base64.b64encode(image_bytes).decode('utf-8')
+        data_uri = f"data:{mime_type};base64,{base64_encoded}"
 
-        # Build multimodal content: image + prompt
-        image_part = types.Part.from_bytes(
-            data=image_bytes,
-            mime_type=mime_type,
-        )
-
-        response = client.models.generate_content(
+        response = client.chat.completions.create(
             model=_MODEL_ID,
-            contents=[image_part, IMAGE_ANALYSIS_PROMPT],
+            messages=[
+                {"role": "system", "content": ANALYSIS_PROMPT},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Please extract all text from this screenshot and analyze it for scam indicators."},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": data_uri
+                            }
+                        }
+                    ]
+                }
+            ],
+            temperature=0.2,
+            max_tokens=1024,
         )
 
-        return _parse_ai_response(response.text)
+        return _parse_ai_response(response.choices[0].message.content)
 
     except json.JSONDecodeError as e:
-        print(f"[AI_DETECTOR] Failed to parse Gemini vision response as JSON: {e}")
+        print(f"[AI_DETECTOR] Failed to parse vision response as JSON: {e}")
         return _fallback_result("AI image response parsing failed")
 
     except Exception as e:
-        print(f"[AI_DETECTOR] Gemini Vision API call failed: {e}")
+        print(f"[AI_DETECTOR] NVIDIA Vision API call failed: {e}")
         return _fallback_result(f"AI image analysis failed: {str(e)}")
 
 
@@ -414,7 +345,7 @@ if __name__ == "__main__":
     """
 
     print("=" * 60)
-    print("AI Detector — Self-Test")
+    print("AI Detector — Self-Test (NVIDIA NIM)")
     print("=" * 60)
 
     result = analyze_with_ai(test_email)

@@ -28,14 +28,7 @@ const scoreSource    = document.getElementById("score-source");
 
 // Input mode elements
 const modeTextBtn    = document.getElementById("mode-text-btn");
-const modeFileBtn    = document.getElementById("mode-file-btn");
 const textMode       = document.getElementById("text-mode");
-const fileMode       = document.getElementById("file-mode");
-const dropzone       = document.getElementById("dropzone");
-const fileInput      = document.getElementById("file-input");
-const fileInfo       = document.getElementById("file-info");
-const fileName       = document.getElementById("file-name");
-const removeFileBtn  = document.getElementById("remove-file");
 
 // AI section elements
 const aiSection      = document.getElementById("ai-section");
@@ -57,8 +50,7 @@ const analyzeAnotherBtn = document.getElementById("analyze-another-btn");
 
 // Store latest result and current mode
 let lastResult = null;
-let currentMode = "text"; // "text", "file", or "image"
-let selectedFile = null;
+let currentMode = "text"; // "text" or "image"
 let selectedImage = null;
 
 // Image mode elements
@@ -78,7 +70,6 @@ const extractedTextContent = document.getElementById("extracted-text-content");
    1. INPUT MODE TOGGLE
    ============================================================ */
 modeTextBtn.addEventListener("click", () => switchMode("text"));
-modeFileBtn.addEventListener("click", () => switchMode("file"));
 modeImageBtn.addEventListener("click", () => switchMode("image"));
 
 function switchMode(mode) {
@@ -86,91 +77,32 @@ function switchMode(mode) {
 
   // Reset all toggle buttons
   modeTextBtn.classList.remove("active");
-  modeFileBtn.classList.remove("active");
   modeImageBtn.classList.remove("active");
 
   // Hide all modes
   textMode.classList.add("hidden");
-  fileMode.classList.add("hidden");
   imageMode.classList.add("hidden");
 
   if (mode === "text") {
     modeTextBtn.classList.add("active");
     textMode.classList.remove("hidden");
-  } else if (mode === "file") {
-    modeFileBtn.classList.add("active");
-    fileMode.classList.remove("hidden");
   } else {
     modeImageBtn.classList.add("active");
     imageMode.classList.remove("hidden");
   }
 }
 
-/* ============================================================
-   2. FILE UPLOAD HANDLING
-   ============================================================ */
 
-// Click to browse
-dropzone.addEventListener("click", () => fileInput.click());
-
-// File selected via input
-fileInput.addEventListener("change", (e) => {
-  if (e.target.files.length > 0) {
-    handleFile(e.target.files[0]);
-  }
-});
-
-// Drag and drop
-dropzone.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  dropzone.classList.add("dragover");
-});
-
-dropzone.addEventListener("dragleave", () => {
-  dropzone.classList.remove("dragover");
-});
-
-dropzone.addEventListener("drop", (e) => {
-  e.preventDefault();
-  dropzone.classList.remove("dragover");
-  if (e.dataTransfer.files.length > 0) {
-    handleFile(e.dataTransfer.files[0]);
-  }
-});
-
-function handleFile(file) {
-  const ext = file.name.split(".").pop().toLowerCase();
-  const allowed = ["txt", "docx", "pdf", "eml", "doc"];
-
-  if (!allowed.includes(ext)) {
-    showError(`Unsupported file type: .${ext}. Supported: .docx, .pdf, .txt, .eml`);
-    return;
-  }
-
-  selectedFile = file;
-  fileName.textContent = `${file.name} (${formatFileSize(file.size)})`;
-  fileInfo.classList.remove("hidden");
-  dropzone.classList.add("hidden");
-}
-
-removeFileBtn.addEventListener("click", () => {
-  selectedFile = null;
-  fileInput.value = "";
-  fileInfo.classList.add("hidden");
-  dropzone.classList.remove("hidden");
-});
-
-function formatFileSize(bytes) {
-  if (bytes < 1024) return bytes + " B";
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-}
 
 /* ============================================================
    2b. IMAGE UPLOAD HANDLING
    ============================================================ */
 
-imageDropzone.addEventListener("click", () => imageInput.click());
+imageDropzone.addEventListener("click", (e) => {
+  if (e.target !== imageInput) {
+    imageInput.click();
+  }
+});
 
 imageInput.addEventListener("change", (e) => {
   if (e.target.files.length > 0) {
@@ -216,6 +148,12 @@ function handleImage(file) {
     imagePreview.classList.remove("hidden");
   };
   reader.readAsDataURL(file);
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
 
 removeImageBtn.addEventListener("click", () => {
@@ -267,13 +205,6 @@ async function analyzeText() {
     }
     body = JSON.stringify({ text: inputText });
     headers["Content-Type"] = "application/json";
-  } else if (currentMode === "file") {
-    if (!selectedFile) {
-      showError("Please select a file to upload.");
-      return;
-    }
-    body = new FormData();
-    body.append("file", selectedFile);
   } else {
     // image mode
     if (!selectedImage) {
@@ -327,12 +258,35 @@ function showError(message) {
 
   const el       = document.createElement("div");
   el.className   = "analyzer__error";
-  el.textContent = `❌ ${message}`;
+
+  if (message.includes("429") || message.includes("RESOURCE_EXHAUSTED") || message.includes("AI Vision is required")) {
+    el.classList.add("quota-error");
+    el.style.textAlign = "left";
+    el.style.backgroundColor = "#fee2e2";
+    el.style.borderLeft = "4px solid #ef4444";
+    el.innerHTML = `
+      <div style="font-weight: 600; margin-bottom: 0.5rem; color: #b91c1c;">🌐 AI Vision Quota Exceeded / Unavailable</div>
+      <div style="font-size: 0.9rem; line-height: 1.4; color: #1f2937;">
+        The screenshot analysis is temporarily rate-limited. Don't worry! You can still analyze this instantly:
+        <ol style="margin-top: 0.5rem; margin-left: 1.2rem; margin-bottom: 0.8rem;">
+          <li>Copy the text from your email or screenshot.</li>
+          <li>Paste it in the <strong>📝 Paste Text</strong> tab.</li>
+          <li>Click <strong>Analyze with AI</strong> for an instant check!</li>
+        </ol>
+      </div>
+      <button onclick="document.getElementById('mode-text-btn').click(); this.parentElement.remove();" 
+              style="background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: 500; font-family: inherit;">
+        Switch to Paste Text Mode
+      </button>
+    `;
+    setTimeout(() => { if(el.parentElement) el.remove(); }, 15000);
+  } else {
+    el.textContent = `❌ ${message}`;
+    setTimeout(() => { if(el.parentElement) el.remove(); }, 6000);
+  }
 
   const card = document.querySelector(".analyzer__card");
   card.appendChild(el);
-
-  setTimeout(() => el.remove(), 6000);
 }
 
 /* ============================================================
@@ -594,11 +548,7 @@ function resetAnalyzer() {
   wordCounterEl.textContent  = "0 words | 0 characters";
   wordCounterEl.classList.remove("warn");
 
-  // Clear file input
-  selectedFile = null;
-  fileInput.value = "";
-  fileInfo.classList.add("hidden");
-  dropzone.classList.remove("hidden");
+
 
   // Clear image input
   selectedImage = null;

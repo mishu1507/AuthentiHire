@@ -57,6 +57,9 @@ PAYMENT_RED_FLAGS: List[tuple] = [
 # 1c. Vague / suspicious job description patterns
 VAGUE_PATTERNS: List[tuple] = [
     ("work from home and earn",     15, "Vague promise: 'work from home and earn'"),
+    ("work from home",              15, "Vague promise: 'work from home'"),
+    ("data entry",                  15, "Vague promise: 'data entry'"),
+    ("experience required: none",   15, "Vague promise: 'experience required: none'"),
     ("no experience needed",        15, "Vague promise: 'no experience needed'"),
     ("unlimited earning",           15, "Vague promise: 'unlimited earning'"),
     ("be your own boss",            15, "Vague promise: 'be your own boss'"),
@@ -166,6 +169,7 @@ SUSPICIOUS_SENDER_PATTERNS: List[tuple] = [
     ("quick-hire",              10, "Suspicious sender: 'quick-hire' domain"),
     ("easy-jobs",               10, "Suspicious sender: 'easy-jobs' domain"),
     ("skill.get",               12, "Suspicious sender: suspicious subdomain pattern"),
+    ("freshersindia",           15, "Suspicious sender: 'freshersindia' domain"),
 ]
 
 
@@ -208,7 +212,7 @@ FAKE_BRAND_DOMAIN_REGEX = re.compile(
 
 # 2c. NEW — Suspicious job portal domains (fake platforms)
 FAKE_PORTAL_REGEX = re.compile(
-    r"(getujobs|geturjobs|getmyjob|easyhiring|quickjobs|jobsalert24|hirenow24)"
+    r"(getujobs|geturjobs|getmyjob|easyhiring|quickjobs|jobsalert24|hirenow24|freshersindia)"
     r"\.(com|in|org|net)",
     re.IGNORECASE,
 )
