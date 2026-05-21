@@ -65,17 +65,7 @@ Contact: hr@accenture.com
 
 Expected Result: Score <30 (GREEN - Safe)
 
----
 
-## Presentation Tips
-
-1. **Show both extremes**: One obvious scam, one legitimate job
-2. **Point out flagged phrases**: Highlight what the system detected
-3. **Explain the score**: Show how each category contributes
-4. **Mention limitations**: "Rule-based, works for common patterns"
-5. **Talk about extensions**: "Could add ML, company verification, browser plugin"
-
----
 
 ## If Something Goes Wrong
 
@@ -95,9 +85,6 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-**Pages look blank?**
-Check browser console (F12 → Console tab) for errors
 
----
 
-**Questions? Need help? Ask your group - you have the code, understand it before Saturday!**
+
